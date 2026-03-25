@@ -205,3 +205,4 @@ The `OAuthTokenProvider` and `XOAuth2Authenticator` classes in this POC will be 
 ---
 
 *This POC was developed as part of the GSoC 2026 application for the Jenkins organization.*
+
