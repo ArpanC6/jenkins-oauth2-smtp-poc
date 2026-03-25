@@ -69,12 +69,17 @@ mvn test
 ```
 
 Expected output:
+
 ```
-[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- OAuthTokenProviderTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- XOAuth2AuthenticatorTest
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
 ### Test Coverage
+
+#### `OAuthTokenProviderTest` — Token Acquisition & Caching (8 tests)
 
 | Test | What It Verifies |
 |---|---|
@@ -86,12 +91,28 @@ Expected output:
 | `testUnauthorizedClientError` | Error on missing SMTP.Send permission |
 | `testNetworkTimeout` | Graceful failure on network error |
 | `testMissingAccessToken` | Error on malformed token response |
-| `testXOAuth2TokenFormat` | XOAUTH2 SASL format matches Microsoft spec |
-| `testExactMicrosoftFormat` | Byte-for-byte format verification |
+
+#### `XOAuth2AuthenticatorTest` — SASL Encoding & Format (5 tests)
+
+| Test | What It Verifies |
+|---|---|
+| `testXOAuth2TokenFormat` | XOAUTH2 SASL format matches Microsoft spec (`user=\x01auth=Bearer\x01\x01`) |
+| `testPasswordAuthentication` | `getPasswordAuthentication()` returns email as username and XOAUTH2 token as password |
+| `testOutputIsValidBase64` | Output is valid base64-decodable string |
+| `testEmailWithPlusSign` | Handles email addresses with special characters (e.g. `+`) |
+| `testExactMicrosoftFormat` | Byte-for-byte format verification against Microsoft specification |
 
 ---
 
-## Running the Demo
+## Demo
+
+### Build & Test — Full Run
+
+> Terminal recording of `mvn clean test` with all 13 tests passing:
+
+<!-- Add your terminal screenshot or GIF here -->
+<!-- Example: ![mvn clean test passing](./assets/demo-terminal.png) -->
+<!-- Or link to a video: [Watch demo on YouTube](https://youtu.be/your-link) -->
 
 ### Simulation Mode (no credentials needed)
 
