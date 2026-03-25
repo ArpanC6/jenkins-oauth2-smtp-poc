@@ -144,7 +144,7 @@ Step 4: Token Cache
   Proactive refresh: 60 seconds before expiry
   Thread-safe:       ConcurrentHashMap — safe for concurrent Jenkins builds
 
-✅ POC simulation complete.
+ POC simulation complete.
 ```
 
 ### Real Mode (with Azure AD app)
