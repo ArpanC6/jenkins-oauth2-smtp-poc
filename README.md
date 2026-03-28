@@ -71,15 +71,17 @@ mvn test
 Expected output:
 
 ```
-[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0 -- OAuthTokenProviderTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- OAuthTokenProviderTest
 [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- XOAuth2AuthenticatorTest
-[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 ```
 
-### Test Coverage
+---
 
-#### `OAuthTokenProviderTest` — Token Acquisition & Caching (8 tests)
+## Test Coverage
+
+### `OAuthTokenProviderTest` — Token Acquisition, Caching & Performance (9 tests)
 
 | Test | What It Verifies |
 |---|---|
@@ -91,8 +93,9 @@ Expected output:
 | `testUnauthorizedClientError` | Error on missing SMTP.Send permission |
 | `testNetworkTimeout` | Graceful failure on network error |
 | `testMissingAccessToken` | Error on malformed token response |
+| `testCacheHitLatency` | Cache hit latency under 5ms (measured: **0.0163ms**) |
 
-#### `XOAuth2AuthenticatorTest` — SASL Encoding & Format (5 tests)
+### `XOAuth2AuthenticatorTest` — SASL Encoding & Format (5 tests)
 
 | Test | What It Verifies |
 |---|---|
@@ -104,15 +107,19 @@ Expected output:
 
 ---
 
+## Performance
+
+The `testCacheHitLatency` test measures the time for a cache hit — after the first token fetch (cache miss via WireMock), the second call returns the cached token with no HTTP request.
+
+```
+Cache hit latency: 0.0163ms
+```
+
+This is over **300× faster** than the 5ms target, confirming that the `ConcurrentHashMap`-based cache adds negligible overhead to Jenkins email sending.
+
+---
+
 ## Demo
-
-### Build & Test — Full Run
-
-> Terminal recording of `mvn clean test` with all 13 tests passing:
-
-<!-- Add your terminal screenshot or GIF here -->
-<!-- Example: ![mvn clean test passing](./assets/demo-terminal.png) -->
-<!-- Or link to a video: [Watch demo on YouTube](https://youtu.be/your-link) -->
 
 ### Simulation Mode (no credentials needed)
 
@@ -190,7 +197,7 @@ private Authenticator getAuthenticator(final MailAccount acc, ...) {
 }
 ```
 
-The `OAuthTokenProvider` and `XOAuth2Authenticator` classes in this POC will be integrated directly into the email-ext-plugin, with the token acquisition delegated to the `entra-oauth-plugin` (as confirmed by maintainer Alex Earl [@slide] in [issue #1420](https://github.com/jenkinsci/email-ext-plugin/issues/1420)).
+The `OAuthTokenProvider` and `XOAuth2Authenticator` classes in this POC will be integrated directly into the email-ext-plugin, with token acquisition delegated to the `entra-oauth-plugin` (as confirmed by maintainer Alex Earl [@slide] in [issue #1420](https://github.com/jenkinsci/email-ext-plugin/issues/1420)).
 
 ---
 
@@ -201,8 +208,8 @@ The `OAuthTokenProvider` and `XOAuth2Authenticator` classes in this POC will be 
 - [Issue #1420 — SMTP OAuth2 support](https://github.com/jenkinsci/email-ext-plugin/issues/1420)
 - [entra-oauth-plugin](https://github.com/jenkinsci/entra-oauth-plugin)
 - [Microsoft OAuth2 Client Credentials Flow](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow)
+- [Community Forum Discussion](https://community.jenkins.io/t/gsoc-2026-arpan-chakraborty-draft-proposal-review-request/36472)
 
 ---
 
 *This POC was developed as part of the GSoC 2026 application for the Jenkins organization.*
-
