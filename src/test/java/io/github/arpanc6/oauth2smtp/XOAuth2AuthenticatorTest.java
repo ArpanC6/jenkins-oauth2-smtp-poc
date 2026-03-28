@@ -3,7 +3,7 @@ package io.github.arpanc6.oauth2smtp;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import javax.mail.PasswordAuthentication;
+import jakarta.mail.PasswordAuthentication;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 

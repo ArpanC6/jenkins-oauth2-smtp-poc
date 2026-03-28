@@ -7,14 +7,6 @@ import org.junit.jupiter.api.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-/**
- * Unit tests for OAuthTokenProvider using WireMock to simulate
- * the Microsoft Identity Platform token endpoint.
- *
- * <p>These tests run completely offline — no Azure AD account required.
- * This is the same testing strategy proposed in the GSoC 2026 proposal
- * for CI/CD environments that cannot reach external endpoints.
- */
 class OAuthTokenProviderTest {
 
     private static WireMockServer wireMock;
@@ -41,7 +33,6 @@ class OAuthTokenProviderTest {
     @BeforeEach
     void setUp() {
         wireMock.resetAll();
-        // Use mock server URL instead of real Microsoft endpoint
         String mockEndpoint = "http://localhost:" + wireMock.port() + "/%s/oauth2/v2.0/token";
         tokenProvider = new OAuthTokenProvider(mockEndpoint);
     }
@@ -52,10 +43,8 @@ class OAuthTokenProviderTest {
     @DisplayName("Should fetch token successfully from mock Azure AD endpoint")
     void testSuccessfulTokenFetch() throws OAuthTokenException {
         stubSuccessfulTokenResponse();
-
         String token = tokenProvider.getAccessToken(
                 CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
-
         assertEquals(MOCK_TOKEN, token);
         verifyTokenEndpointCalled(1);
     }
@@ -64,14 +53,11 @@ class OAuthTokenProviderTest {
     @DisplayName("Should return cached token on second call without hitting endpoint")
     void testTokenCaching() throws OAuthTokenException {
         stubSuccessfulTokenResponse();
-
         String token1 = tokenProvider.getAccessToken(
                 CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
         String token2 = tokenProvider.getAccessToken(
                 CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
-
         assertEquals(token1, token2);
-        // Should only hit the endpoint once — second call uses cache
         verifyTokenEndpointCalled(1);
     }
 
@@ -79,12 +65,9 @@ class OAuthTokenProviderTest {
     @DisplayName("Should fetch fresh token after cache invalidation")
     void testCacheInvalidation() throws OAuthTokenException {
         stubSuccessfulTokenResponse();
-
         tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
         tokenProvider.invalidateCache(CREDENTIALS_ID);
         tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
-
-        // Should hit the endpoint twice — cache was cleared
         verifyTokenEndpointCalled(2);
     }
 
@@ -92,11 +75,8 @@ class OAuthTokenProviderTest {
     @DisplayName("Should handle independent caches for different credentialsIds")
     void testIndependentCachingPerCredentialsId() throws OAuthTokenException {
         stubSuccessfulTokenResponse();
-
         tokenProvider.getAccessToken("creds-1", TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
         tokenProvider.getAccessToken("creds-2", TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
-
-        // Different credentialsIds → two separate network calls
         verifyTokenEndpointCalled(2);
     }
 
@@ -113,10 +93,8 @@ class OAuthTokenProviderTest {
                                 + "\"error\": \"invalid_client\","
                                 + "\"error_description\": \"AADSTS70011: The provided client secret is incorrect.\""
                                 + "}")));
-
         OAuthTokenException ex = assertThrows(OAuthTokenException.class, () ->
                 tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, "wrong-secret", SCOPE));
-
         assertTrue(ex.getMessage().contains("invalid_client"));
         assertTrue(ex.getMessage().contains("AADSTS70011"));
     }
@@ -132,10 +110,8 @@ class OAuthTokenProviderTest {
                                 + "\"error\": \"unauthorized_client\","
                                 + "\"error_description\": \"AADSTS700016: Application was not found in the directory.\""
                                 + "}")));
-
         OAuthTokenException ex = assertThrows(OAuthTokenException.class, () ->
                 tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE));
-
         assertTrue(ex.getMessage().contains("unauthorized_client"));
     }
 
@@ -144,9 +120,8 @@ class OAuthTokenProviderTest {
     void testNetworkTimeout() {
         wireMock.stubFor(post(urlPathMatching("/.*/oauth2/v2.0/token"))
                 .willReturn(aResponse()
-                        .withFixedDelay(15_000)  // 15 second delay > 10s timeout
+                        .withFixedDelay(15_000)
                         .withStatus(200)));
-
         assertThrows(OAuthTokenException.class, () ->
                 tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE));
     }
@@ -159,11 +134,32 @@ class OAuthTokenProviderTest {
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
                         .withBody("{\"token_type\": \"Bearer\", \"expires_in\": 3599}")));
-
         OAuthTokenException ex = assertThrows(OAuthTokenException.class, () ->
                 tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE));
-
         assertTrue(ex.getMessage().contains("no access_token"));
+    }
+
+    // ─── Performance ─────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should return cached token with sub-millisecond latency")
+    void testCacheHitLatency() throws OAuthTokenException {
+        stubSuccessfulTokenResponse();
+
+        // First call — cache miss (fetches token via WireMock)
+        tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
+
+        // Second call — cache hit (measure latency)
+        long start = System.nanoTime();
+        String token = tokenProvider.getAccessToken(CREDENTIALS_ID, TENANT_ID, CLIENT_ID, CLIENT_SECRET, SCOPE);
+        long elapsed = System.nanoTime() - start;
+
+        double ms = elapsed / 1_000_000.0;
+        System.out.println("Cache hit latency: " + ms + "ms");
+
+        assertNotNull(token);
+        assertTrue(ms < 5.0, "Cache hit should be under 5ms, was: " + ms + "ms");
+        verifyTokenEndpointCalled(1);
     }
 
     // ─── Helper Methods ──────────────────────────────────────────────────────
