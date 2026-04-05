@@ -1,33 +1,3 @@
-## Contribution Progress (Pre-GSoC)
-
-Active contributions to [jenkinsci/email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin) 
-as part of GSoC 2026 application.
-
-### Merged PRs (9)
-
-| PR | Description |
-|---|---|
-| [#1493](https://github.com/jenkinsci/email-ext-plugin/pull/1493) | Fix deprecated StringUtils.equals usage in MailAccount |
-| [#1494](https://github.com/jenkinsci/email-ext-plugin/pull/1494) | Replace deprecated ACL.SYSTEM with Jenkins.getAuthentication() |
-| [#1503](https://github.com/jenkinsci/email-ext-plugin/pull/1503) | Add missing @param Javadoc tags in UpstreamComitter |
-| [#1505](https://github.com/jenkinsci/email-ext-plugin/pull/1505) | Replace deprecated ACL.SYSTEM with ACL.SYSTEM2 |
-| [#1507](https://github.com/jenkinsci/email-ext-plugin/pull/1507) | Remove unused deprecated Util class |
-| [#1541](https://github.com/jenkinsci/email-ext-plugin/pull/1541) | Fix SMTP 4xx transient error retry logic |
-| [#1550](https://github.com/jenkinsci/email-ext-plugin/pull/1550) | Extract SMTP property keys as named constants |
-| [#1553](https://github.com/jenkinsci/email-ext-plugin/pull/1553) | fix: restore thread interrupt flag in renderTemplate() |
-| [#1555](https://github.com/jenkinsci/email-ext-plugin/pull/1555) | fix: resolve JENKINS-26838 — replace IsChildFileCallable with FilePath.isDescendant() |
-
-### Open PRs (Under Review)
-
-| PR | Description |
-|---|---|
-| [#1559](https://github.com/jenkinsci/email-ext-plugin/pull/1559) | test: add unit tests for EmailThrottler |
-| [#1497](https://github.com/jenkinsci/email-ext-plugin/pull/1497) | fix: Fix resource leak by wrapping GroovyClassLoader in try-with-resources |
-| [#1523](https://github.com/jenkinsci/email-ext-plugin/pull/1523) | test: Add unit tests for XSS escaping in EmailExtTemplateAction.renderError() |
-
-### Community Reviews
-25+ code reviews on open PRs from other contributors
-
 # Jenkins OAuth2 SMTP POC
 
 **GSoC 2026 Proof of Concept**  
