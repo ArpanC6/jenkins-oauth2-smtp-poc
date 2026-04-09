@@ -25,7 +25,7 @@ DEBUG SMTP: AUTH XOAUTH2 failed
 
 I have been actively contributing to [jenkinsci/email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin) throughout the GSoC application period to understand the codebase deeply and demonstrate readiness for the project.
 
-### Merged PRs — 7 Merged ✅
+### Merged PRs — 7 Merged
 
 | PR | Description |
 |---|---|
@@ -37,7 +37,7 @@ I have been actively contributing to [jenkinsci/email-ext-plugin](https://github
 | [#1541](https://github.com/jenkinsci/email-ext-plugin/pull/1541) | Add unit tests for `AbortedTrigger` covering triggered and skipped behavior |
 | [#1550](https://github.com/jenkinsci/email-ext-plugin/pull/1550) | Extract SMTP property keys as named constants in `ExtendedEmailPublisherDescriptor` |
 
-### Open PRs — 8 Open (all CI checks passing ✅)
+### Open PRs — 8 Open (all CI checks passing)
 
 | PR | Description |
 |---|---|
@@ -80,23 +80,33 @@ This repository is a standalone Java implementation of the **OAuth 2.0 Client Cr
 
 ### Flow
 
+**Phase 1 — Token Acquisition**
+
 ```
-Jenkins                     Microsoft Identity Platform
-  |                                    |
-  |-- POST /{tenant}/oauth2/v2.0/token -->|
-  |   grant_type=client_credentials    |
-  |   client_id, client_secret         |
-  |   scope=https://outlook.office365.com/.default
-  |                                    |
-  |<------ access_token (TTL: 3599s) --|
-  |
-  |           Outlook SMTP (smtp.office365.com:587)
-  |                    |
-  |-- STARTTLS ------->|
-  |-- AUTH XOAUTH2 --->|  (base64 encoded: user=email\x01auth=Bearer {token}\x01\x01)
-  |<-- 235 Auth OK ----|
-  |-- SEND EMAIL ----->|
-  |<-- 250 Delivered --|
+Jenkins  →  POST https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
+            Body: grant_type=client_credentials
+                  client_id, client_secret
+                  scope=https://outlook.office365.com/.default
+
+         ←  { "access_token": "eyJ0eXAi...", "expires_in": 3599 }
+```
+
+**Phase 2 — SMTP Authentication**
+
+```
+Jenkins  →  STARTTLS  →  smtp.office365.com:587
+         →  AUTH XOAUTH2 <base64(user=email\x01auth=Bearer {token}\x01\x01)>
+         ←  235 2.7.0 Authentication successful
+         →  SEND EMAIL
+         ←  250 Message delivered
+```
+
+**Token Cache**
+
+```
+First build   →  fetch token from Entra ID  (cache miss)
+Second build  →  return cached token        (cache hit, ~0.016ms)
+After 59 min  →  proactive refresh 60s before expiry
 ```
 
 ---
