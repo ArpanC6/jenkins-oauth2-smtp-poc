@@ -227,7 +227,6 @@ The `OAuthTokenProvider` and `XOAuth2Authenticator` classes in this POC will be 
 
 ## Related
 
-- [GSoC 2026 Proposal (PDF)](https://github.com/ArpanC6/jenkins-oauth2-smtp-poc/blob/main/proposal/GSoC_2026_Jenkins_OAuth_SMTP.pdf)
 - [email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin)
 - [Issue #1420 — SMTP OAuth2 support](https://github.com/jenkinsci/email-ext-plugin/issues/1420)
 - [entra-oauth-plugin](https://github.com/jenkinsci/entra-oauth-plugin)
