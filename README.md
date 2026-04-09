@@ -1,4 +1,4 @@
-# Jenkins OAuth2 SMTP POC
+# Jenkins Email Notifications Using Outlook SMTP with OAuth 2.0
 
 **GSoC 2026 Proof of Concept**  
 **Project:** Jenkins Email Notifications Using Outlook SMTP with OAuth 2.0  
@@ -18,6 +18,49 @@ DEBUG SMTP: AUTH XOAUTH2 failed
 ```
 
 **Root cause:** `ExtendedEmailPublisherDescriptor#getAuthenticator()` passes `client_secret` directly as the SMTP password instead of fetching a proper OAuth2 access token.
+
+---
+
+## Contribution Progress (as of April 9, 2026)
+
+I have been actively contributing to [jenkinsci/email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin) throughout the GSoC application period to understand the codebase deeply and demonstrate readiness for the project.
+
+### Merged PRs — 7 Merged ✅
+
+| PR | Description |
+|---|---|
+| [#1493](https://github.com/jenkinsci/email-ext-plugin/pull/1493) | Fix deprecated `StringUtils.equals` usage in `MailAccount` |
+| [#1494](https://github.com/jenkinsci/email-ext-plugin/pull/1494) | Replace deprecated `ACL.SYSTEM` with `Jenkins.getAuthentication()` in `MailAccount` |
+| [#1503](https://github.com/jenkinsci/email-ext-plugin/pull/1503) | Add missing `@param` Javadoc tags in `UpstreamComitter` recipient providers |
+| [#1505](https://github.com/jenkinsci/email-ext-plugin/pull/1505) | Replace deprecated `ACL.SYSTEM` with `ACL.SYSTEM2` in `doCheckCredentialsId()` and `migrateCredentials()` |
+| [#1507](https://github.com/jenkinsci/email-ext-plugin/pull/1507) | Remove unused deprecated `Util` class |
+| [#1541](https://github.com/jenkinsci/email-ext-plugin/pull/1541) | Add unit tests for `AbortedTrigger` covering triggered and skipped behavior |
+| [#1550](https://github.com/jenkinsci/email-ext-plugin/pull/1550) | Extract SMTP property keys as named constants in `ExtendedEmailPublisherDescriptor` |
+
+### Open PRs — 8 Open (all CI checks passing ✅)
+
+| PR | Description |
+|---|---|
+| [#1497](https://github.com/jenkinsci/email-ext-plugin/pull/1497) | Fix `GroovyClassLoader` resource leak by wrapping in try-with-resources |
+| [#1523](https://github.com/jenkinsci/email-ext-plugin/pull/1523) | Add unit tests for XSS escaping in `EmailExtTemplateAction.renderError()` |
+| [#1553](https://github.com/jenkinsci/email-ext-plugin/pull/1553) | Restore thread interrupt flag in `renderTemplate()` and split broad exception handling |
+| [#1555](https://github.com/jenkinsci/email-ext-plugin/pull/1555) | Resolve JENKINS-26838 — replace `IsChildFileCallable` with `FilePath.isDescendant()` |
+| [#1559](https://github.com/jenkinsci/email-ext-plugin/pull/1559) | Add unit tests for `EmailThrottler` |
+| [#1561](https://github.com/jenkinsci/email-ext-plugin/pull/1561) | Restore interrupt flag in `ContentBuilder.transformText()` and add test coverage |
+| [#1562](https://github.com/jenkinsci/email-ext-plugin/pull/1562) | Restore interrupt flag in `addContent()` save email output path |
+| [#1565](https://github.com/jenkinsci/email-ext-plugin/pull/1565) | Exception handling improvement in `RecipientProviderUtilities` |
+
+### Community Code Reviews
+
+Beyond submitting code, I actively review other contributors' PRs with substantive technical feedback. Some highlights:
+
+- **PR #1480** — Identified a security vulnerability allowing arbitrary file writes via crafted JSON, a Windows path resolution bug, and missing cleanup logic. All 4 issues were fixed immediately.
+- **PR #1513** — Suggested `InetAddress.getByName()` for hostname validation. Contributor acknowledged: *"@ArpanC6 it worked. Thanks a lot for the help."*
+- **PR #1534** — Identified a trailing quote bug in log messages that would have appeared in actual debug output. Fix commit pushed within minutes.
+- **PR #1535** — Identified that `refreshToken()` always threw `OAuthTokenException` as a placeholder without fetching a real token. Contributor fixed all issues immediately.
+- **PR #1539** — Identified missing edge case and mock debug mode issue. CI went from 8 to 371 checks green after contributor's fix.
+
+13+ contributors have acted on my review feedback across 20+ reviewed PRs.
 
 ---
 
@@ -127,33 +170,6 @@ This is over **300× faster** than the 5ms target, confirming that the `Concurre
 mvn compile exec:java -Dexec.mainClass=io.github.arpanc6.oauth2smtp.OAuthSmtpDemo
 ```
 
-Output:
-```
-=== Jenkins OAuth2 SMTP POC — GSoC 2026 ===
-
-Step 1: Token Acquisition (simulated)
-  POST https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
-  Body: grant_type=client_credentials&client_id=...&scope=...
-  Response: { "access_token": "eyJ0eXAi...", "expires_in": 3599 }
-
-Step 2: XOAUTH2 Token Encoding
-  Raw:    user=jenkins@contoso.com\x01auth=Bearer eyJ0eXAi...\x01\x01
-  Base64: dXNlcj1qZW5raW5zQGNvbnRvc28uY29tA...
-
-Step 3: SMTP Session (simulated)
-  HOST:     smtp.office365.com:587
-  STARTTLS: enabled
-  AUTH:     XOAUTH2 dXNlcj1...
-  Server:   235 2.7.0 Authentication successful
-
-Step 4: Token Cache
-  Cached for:        3540 seconds (59 minutes)
-  Proactive refresh: 60 seconds before expiry
-  Thread-safe:       ConcurrentHashMap — safe for concurrent Jenkins builds
-
- POC simulation complete.
-```
-
 ### Real Mode (with Azure AD app)
 
 1. Register an app at [portal.azure.com](https://portal.azure.com)
@@ -173,8 +189,6 @@ mvn compile exec:java -Dexec.mainClass=io.github.arpanc6.oauth2smtp.OAuthSmtpDem
 ---
 
 ## How This Maps to the email-ext-plugin Fix
-
-The core change in the plugin will be in `ExtendedEmailPublisherDescriptor.java`:
 
 **Before (broken):**
 ```java
@@ -209,6 +223,7 @@ The `OAuthTokenProvider` and `XOAuth2Authenticator` classes in this POC will be 
 - [entra-oauth-plugin](https://github.com/jenkinsci/entra-oauth-plugin)
 - [Microsoft OAuth2 Client Credentials Flow](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-client-creds-grant-flow)
 - [Community Forum Discussion](https://community.jenkins.io/t/gsoc-2026-arpan-chakraborty-draft-proposal-review-request/36472)
+- [All my PRs to email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin/pulls?q=is%3Apr+author%3AArpanC6)
 
 ---
 
