@@ -11,21 +11,18 @@
 
 Microsoft deprecated basic authentication for Exchange Online SMTP in September 2025.  
 Jenkins administrators using Outlook for email notifications see this error:
-
-```
 DEBUG SMTP: AUTH XOAUTH2 failed
 535 5.7.3 Authentication unsuccessful
-```
 
 **Root cause:** `ExtendedEmailPublisherDescriptor#getAuthenticator()` passes `client_secret` directly as the SMTP password instead of fetching a proper OAuth2 access token.
 
 ---
 
-## Contribution Progress (as of April 9, 2026)
+## Contribution Progress (as of April 11, 2026)
 
 I have been actively contributing to [jenkinsci/email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin) throughout the GSoC application period to understand the codebase deeply and demonstrate readiness for the project.
 
-### Merged PRs — 7 Merged
+### Merged PRs — 8 Merged
 
 | PR | Description |
 |---|---|
@@ -36,8 +33,9 @@ I have been actively contributing to [jenkinsci/email-ext-plugin](https://github
 | [#1507](https://github.com/jenkinsci/email-ext-plugin/pull/1507) | Remove unused deprecated `Util` class |
 | [#1541](https://github.com/jenkinsci/email-ext-plugin/pull/1541) | Add unit tests for `AbortedTrigger` covering triggered and skipped behavior |
 | [#1550](https://github.com/jenkinsci/email-ext-plugin/pull/1550) | Extract SMTP property keys as named constants in `ExtendedEmailPublisherDescriptor` |
+| [#1565](https://github.com/jenkinsci/email-ext-plugin/pull/1565) | Exception handling improvement in `RecipientProviderUtilities` + fix SpotBugs null dereference in `RequesterRecipientProvider` |
 
-### Open PRs — 8 Open (all CI checks passing)
+### Open PRs — 9 Open (all CI checks passing)
 
 | PR | Description |
 |---|---|
@@ -48,7 +46,7 @@ I have been actively contributing to [jenkinsci/email-ext-plugin](https://github
 | [#1559](https://github.com/jenkinsci/email-ext-plugin/pull/1559) | Add unit tests for `EmailThrottler` |
 | [#1561](https://github.com/jenkinsci/email-ext-plugin/pull/1561) | Restore interrupt flag in `ContentBuilder.transformText()` and add test coverage |
 | [#1562](https://github.com/jenkinsci/email-ext-plugin/pull/1562) | Restore interrupt flag in `addContent()` save email output path |
-| [#1565](https://github.com/jenkinsci/email-ext-plugin/pull/1565) | Exception handling improvement in `RecipientProviderUtilities` |
+| [#1566](https://github.com/jenkinsci/email-ext-plugin/pull/1566) | Add unit tests for `EmailExtTemplateActionFactory` |
 
 ### Community Code Reviews
 
@@ -60,7 +58,7 @@ Beyond submitting code, I actively review other contributors' PRs with substanti
 - **PR #1535** — Identified that `refreshToken()` always threw `OAuthTokenException` as a placeholder without fetching a real token. Contributor fixed all issues immediately.
 - **PR #1539** — Identified missing edge case and mock debug mode issue. CI went from 8 to 371 checks green after contributor's fix.
 
-13+ contributors have acted on my review feedback across 20+ reviewed PRs.
+13+ contributors have acted on my review feedback across 30+ reviewed PRs.
 
 ---
 
@@ -81,33 +79,23 @@ This repository is a standalone Java implementation of the **OAuth 2.0 Client Cr
 ### Flow
 
 **Phase 1 — Token Acquisition**
-
-```
 Jenkins  →  POST https://login.microsoftonline.com/{tenant}/oauth2/v2.0/token
-            Body: grant_type=client_credentials
-                  client_id, client_secret
-                  scope=https://outlook.office365.com/.default
-
-         ←  { "access_token": "eyJ0eXAi...", "expires_in": 3599 }
-```
+Body: grant_type=client_credentials
+client_id, client_secret
+scope=https://outlook.office365.com/.default
+     ←  { "access_token": "eyJ0eXAi...", "expires_in": 3599 }
 
 **Phase 2 — SMTP Authentication**
-
-```
 Jenkins  →  STARTTLS  →  smtp.office365.com:587
-         →  AUTH XOAUTH2 <base64(user=email\x01auth=Bearer {token}\x01\x01)>
-         ←  235 2.7.0 Authentication successful
-         →  SEND EMAIL
-         ←  250 Message delivered
-```
+→  AUTH XOAUTH2 <base64(user=email\x01auth=Bearer {token}\x01\x01)>
+←  235 2.7.0 Authentication successful
+→  SEND EMAIL
+←  250 Message delivered
 
 **Token Cache**
-
-```
 First build   →  fetch token from Entra ID  (cache miss)
 Second build  →  return cached token        (cache hit, ~0.016ms)
 After 59 min  →  proactive refresh 60s before expiry
-```
 
 ---
 
@@ -122,13 +110,10 @@ mvn test
 ```
 
 Expected output:
-
-```
 [INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0 -- OAuthTokenProviderTest
 [INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0 -- XOAuth2AuthenticatorTest
 [INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
-```
 
 ---
 
@@ -163,10 +148,7 @@ Expected output:
 ## Performance
 
 The `testCacheHitLatency` test measures the time for a cache hit — after the first token fetch (cache miss via WireMock), the second call returns the cached token with no HTTP request.
-
-```
 Cache hit latency: 0.0163ms
-```
 
 This is over **300× faster** than the 5ms target, confirming that the `ConcurrentHashMap`-based cache adds negligible overhead to Jenkins email sending.
 
