@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: jenkins-oauth2-smtp-poc
+    runtime: java
+    buildCommand: mvn clean package -DskipTests
+    startCommand: java -jar target/jenkins-oauth2-smtp-poc-1.0-SNAPSHOT.jar
+    envVars:
+      - key: PORT
+        value: 8080

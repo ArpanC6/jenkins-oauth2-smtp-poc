@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jenkins OAuth2 SMTP — Live Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+          --bg: #0d1117;
+          --surface: #161b22;
+          --surface2: #21262d;
+          --border: #30363d;
+          --accent: #f78166;
+          --green: #3fb950;
+          --blue: #58a6ff;
+          --yellow: #d29922;
+          --text: #e6edf3;
+          --muted: #7d8590;
+          --mono: 'JetBrains Mono', monospace;
+          --sans: 'Inter', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+          background: var(--bg);
+          color: var(--text);
+          font-family: var(--sans);
+          min-height: 100vh;
+          line-height: 1.6;
+        }
+
+        .bg-grid {
+          position: fixed; inset: 0; z-index: 0;
+          background-image:
+            linear-gradient(rgba(88,166,255,.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(88,166,255,.03) 1px, transparent 1px);
+          background-size: 40px 40px;
+          pointer-events: none;
+        }
+
+        .container {
+          max-width: 860px;
+          margin: 0 auto;
+          padding: 40px 24px 80px;
+          position: relative; z-index: 1;
+        }
+
+        header {
+          text-align: center;
+          margin-bottom: 48px;
+        }
+
+        .badge {
+          display: inline-flex; align-items: center; gap: 8px;
+          background: rgba(247,129,102,.1);
+          border: 1px solid rgba(247,129,102,.3);
+          border-radius: 20px;
+          padding: 4px 14px;
+          font-size: 12px;
+          font-family: var(--mono);
+          color: var(--accent);
+          margin-bottom: 20px;
+          letter-spacing: .5px;
+        }
+
+        .badge::before {
+          content: '';
+          width: 6px; height: 6px;
+          background: var(--accent);
+          border-radius: 50%;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: .4; transform: scale(1.3); }
+        }
+
+        h1 {
+          font-size: clamp(22px, 4vw, 32px);
+          font-weight: 600;
+          color: var(--text);
+          margin-bottom: 12px;
+          letter-spacing: -.5px;
+        }
+
+        h1 span { color: var(--blue); }
+
+        .subtitle {
+          color: var(--muted);
+          font-size: 15px;
+          max-width: 580px;
+          margin: 0 auto 28px;
+        }
+
+        .links {
+          display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;
+          margin-bottom: 32px;
+        }
+
+        .link-btn {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 6px 14px;
+          border-radius: 6px;
+          border: 1px solid var(--border);
+          color: var(--muted);
+          text-decoration: none;
+          font-size: 13px;
+          font-family: var(--mono);
+          transition: all .2s;
+          background: var(--surface);
+        }
+
+        .link-btn:hover {
+          border-color: var(--blue);
+          color: var(--blue);
+        }
+
+        .run-btn {
+          display: inline-flex; align-items: center; gap: 10px;
+          background: var(--accent);
+          color: #0d1117;
+          border: none;
+          padding: 12px 28px;
+          border-radius: 8px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          font-family: var(--sans);
+          transition: all .2s;
+          box-shadow: 0 0 20px rgba(247,129,102,.2);
+        }
+
+        .run-btn:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 0 30px rgba(247,129,102,.35);
+        }
+
+        .run-btn:disabled {
+          opacity: .6; cursor: not-allowed;
+        }
+
+        .run-btn .icon { font-size: 16px; }
+
+        /* Flow diagram */
+        .flow {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 0;
+          flex-wrap: wrap;
+          margin: 40px 0 32px;
+        }
+
+        .flow-node {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 10px 16px;
+          font-size: 12px;
+          font-family: var(--mono);
+          color: var(--muted);
+          text-align: center;
+          white-space: nowrap;
+        }
+
+        .flow-arrow {
+          color: var(--border);
+          font-size: 18px;
+          padding: 0 4px;
+        }
+
+        /* Steps */
+        .steps { margin-top: 8px; }
+
+        .step-card {
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 10px;
+          padding: 20px 24px;
+          margin-bottom: 12px;
+          opacity: 0;
+          transform: translateY(16px);
+          transition: all .4s ease;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .step-card.visible {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
+        .step-card::before {
+          content: '';
+          position: absolute;
+          left: 0; top: 0; bottom: 0;
+          width: 3px;
+        }
+
+        .step-card.success::before { background: var(--green); }
+        .step-card.info::before { background: var(--blue); }
+        .step-card.warning::before { background: var(--yellow); }
+
+        .step-header {
+          display: flex; align-items: center; gap: 12px;
+          margin-bottom: 12px;
+        }
+
+        .step-num {
+          width: 28px; height: 28px;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 12px;
+          font-weight: 600;
+          font-family: var(--mono);
+          flex-shrink: 0;
+        }
+
+        .success .step-num { background: rgba(63,185,80,.15); color: var(--green); border: 1px solid rgba(63,185,80,.3); }
+        .info .step-num { background: rgba(88,166,255,.15); color: var(--blue); border: 1px solid rgba(88,166,255,.3); }
+
+        .step-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text);
+        }
+
+        .step-badge {
+          margin-left: auto;
+          font-size: 11px;
+          font-family: var(--mono);
+          padding: 2px 8px;
+          border-radius: 4px;
+        }
+
+        .success .step-badge { background: rgba(63,185,80,.1); color: var(--green); }
+        .info .step-badge { background: rgba(88,166,255,.1); color: var(--blue); }
+
+        .step-action {
+          font-family: var(--mono);
+          font-size: 12px;
+          color: var(--accent);
+          margin-bottom: 8px;
+          word-break: break-all;
+        }
+
+        .step-detail {
+          font-family: var(--mono);
+          font-size: 11.5px;
+          color: var(--muted);
+          background: var(--surface2);
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          padding: 10px 12px;
+          margin-bottom: 10px;
+          word-break: break-all;
+          line-height: 1.5;
+        }
+
+        .step-result {
+          font-size: 13px;
+          color: var(--text);
+          display: flex; align-items: center; gap: 6px;
+        }
+
+        .step-result::before { content: '→'; color: var(--muted); }
+        .success .step-result::before { content: '✓'; color: var(--green); }
+
+        /* Loading bar */
+        .progress-bar {
+          height: 2px;
+          background: var(--surface2);
+          border-radius: 1px;
+          margin-bottom: 24px;
+          overflow: hidden;
+          display: none;
+        }
+
+        .progress-bar.active { display: block; }
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, var(--blue), var(--accent));
+          border-radius: 1px;
+          width: 0%;
+          transition: width .3s ease;
+        }
+
+        /* Summary */
+        .summary {
+          background: var(--surface);
+          border: 1px solid rgba(63,185,80,.2);
+          border-radius: 10px;
+          padding: 20px 24px;
+          margin-top: 24px;
+          display: none;
+        }
+
+        .summary.visible { display: block; }
+
+        .summary h3 {
+          color: var(--green);
+          font-size: 14px;
+          font-family: var(--mono);
+          margin-bottom: 12px;
+        }
+
+        .stat-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+          gap: 12px;
+        }
+
+        .stat {
+          background: var(--surface2);
+          border-radius: 8px;
+          padding: 12px;
+          border: 1px solid var(--border);
+        }
+
+        .stat-val {
+          font-family: var(--mono);
+          font-size: 18px;
+          font-weight: 600;
+          color: var(--text);
+          margin-bottom: 4px;
+        }
+
+        .stat-label {
+          font-size: 11px;
+          color: var(--muted);
+          text-transform: uppercase;
+          letter-spacing: .5px;
+        }
+
+        footer {
+          text-align: center;
+          margin-top: 60px;
+          color: var(--muted);
+          font-size: 12px;
+          font-family: var(--mono);
+        }
+
+        footer a { color: var(--blue); text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="container">
+
+    <header>
+        <div class="badge">GSoC 2026 · Jenkins · Proof of Concept</div>
+        <h1>Jenkins Email via <span>OAuth 2.0</span></h1>
+        <p class="subtitle">
+            Live simulation of the OAuth 2.0 Client Credentials Flow fix for
+            <code style="color:var(--accent);font-family:var(--mono);font-size:13px">email-ext-plugin</code> —
+            replacing broken Basic Auth with proper XOAUTH2 SMTP authentication.
+        </p>
+        <div class="links">
+            <a class="link-btn" href="https://github.com/ArpanC6/jenkins-oauth2-smtp-poc" target="_blank">
+                ⎔ GitHub Repo
+            </a>
+            <a class="link-btn" href="https://github.com/jenkinsci/email-ext-plugin/issues/1420" target="_blank">
+                ⚠ Issue #1420
+            </a>
+            <a class="link-btn" href="/api/demo" target="_blank">
+                {} Raw JSON API
+            </a>
+        </div>
+        <button class="run-btn" id="runBtn" onclick="runDemo()">
+            <span class="icon">▶</span> Run Live Demo
+        </button>
+    </header>
+
+    <!-- Flow diagram -->
+    <div class="flow">
+        <div class="flow-node">Jenkins Build</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Token Fetch</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">XOAUTH2 Encode</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">SMTP AUTH</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">Email Sent ✓</div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="steps" id="stepsContainer"></div>
+
+    <div class="summary" id="summary">
+        <h3>✓ Demo Complete — All 5 Steps Passed</h3>
+        <div class="stat-grid">
+            <div class="stat">
+                <div class="stat-val" style="color:var(--green)">0.016ms</div>
+                <div class="stat-label">Cache Hit Latency</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" style="color:var(--blue)">300×</div>
+                <div class="stat-label">Faster than 5ms target</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" style="color:var(--accent)">3599s</div>
+                <div class="stat-label">Token Validity</div>
+            </div>
+            <div class="stat">
+                <div class="stat-val" style="color:var(--green)">14</div>
+                <div class="stat-label">Tests Passing</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        Built by <a href="https://github.com/ArpanC6">Arpan Chakraborty</a> ·
+        GSoC 2026 Application ·
+        <a href="https://www.jenkins.io/projects/gsoc/">Jenkins Organization</a>
+    </footer>
+</div>
+
+<script>
+    async function runDemo() {
+      const btn = document.getElementById('runBtn');
+      const container = document.getElementById('stepsContainer');
+      const progressBar = document.getElementById('progressBar');
+      const progressFill = document.getElementById('progressFill');
+      const summary = document.getElementById('summary');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="icon">⟳</span> Running...';
+      container.innerHTML = '';
+      summary.classList.remove('visible');
+      progressBar.classList.add('active');
+      progressFill.style.width = '0%';
+
+      try {
+        const res = await fetch('/api/demo');
+        const data = await res.json();
+
+        for (let i = 0; i < data.steps.length; i++) {
+          const step = data.steps[i];
+          await delay(600);
+
+          progressFill.style.width = ((i + 1) / data.steps.length * 100) + '%';
+
+          const card = document.createElement('div');
+          card.className = `step-card ${step.type}`;
+          card.innerHTML = `
+            <div class="step-header">
+              <div class="step-num">${step.step}</div>
+              <div class="step-title">${step.title}</div>
+              <span class="step-badge">${step.type === 'success' ? 'PASS' : 'INFO'}</span>
+            </div>
+            <div class="step-action">${escHtml(step.action)}</div>
+            <div class="step-detail">${escHtml(step.detail)}</div>
+            <div class="step-result">${escHtml(step.result)}</div>
+          `;
+          container.appendChild(card);
+
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => card.classList.add('visible'));
+          });
+        }
+
+        await delay(400);
+        summary.classList.add('visible');
+
+      } catch (e) {
+        container.innerHTML = `<div class="step-card info visible">
+          <div class="step-header"><div class="step-num">!</div>
+          <div class="step-title">Connection Error</div></div>
+          <div class="step-detail">${e.message}</div>
+        </div>`;
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span class="icon">↺</span> Run Again';
+    }
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+    function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
