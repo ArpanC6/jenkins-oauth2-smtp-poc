@@ -95,13 +95,17 @@ Beyond submitting code, I actively review other contributors' PRs with substanti
 
 13+ contributors have acted on my review feedback across 30+ reviewed PRs.
 
-## Real Azure AD Token Acquired (April 17, 2026)
+## Live Test Result -> Real Microsoft Entra ID (April 17, 2026)
 
-Successfully acquired a real OAuth2 token from Microsoft Entra ID:
-- Token length: 2047 chars
-- STARTTLS connection established to smtp.office365.com:587
-- XOAUTH2 authentication attempted
-- SMTP AUTH failed only due to missing admin consent (university tenant restriction — not a code issue)
+Beyond WireMock-based tests, a real OAuth2 token was successfully 
+acquired from Microsoft Entra ID during live testing:
+
+- Real Bearer token acquired (length: 2047 chars)
+- STARTTLS established to smtp.office365.com:587
+- XOAUTH2 authentication attempted correctly
+- SMTP AUTH failed — university tenant admin consent 
+  restriction (not a code issue)
+- All 14 unit tests still passing
 
 ## What This POC Demonstrates
 
