@@ -103,7 +103,7 @@ acquired from Microsoft Entra ID during live testing:
 - Real Bearer token acquired (length: 2047 chars)
 - STARTTLS established to smtp.office365.com:587
 - XOAUTH2 authentication attempted correctly
-- SMTP AUTH failed — university tenant admin consent 
+- SMTP AUTH failed - university tenant admin consent 
   restriction (not a code issue)
 - All 14 unit tests still passing
 
