@@ -208,7 +208,7 @@ This is over **300× faster** than the 5ms target, confirming that the `Concurre
 
 ## Demo
 
-### 🌐 Live Web Demo (No setup needed)
+###  Live Web Demo (No setup needed)
 
 **https://jenkins-oauth2-smtp-poc.onrender.com**
 
