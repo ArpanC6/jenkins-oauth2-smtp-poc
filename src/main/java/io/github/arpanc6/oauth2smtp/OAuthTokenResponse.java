@@ -1,5 +1,6 @@
 package io.github.arpanc6.oauth2smtp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *   "access_token": "eyJ0eXAiOiJKV1Qi..."
  * }
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class OAuthTokenResponse {
 
     @JsonProperty("access_token")

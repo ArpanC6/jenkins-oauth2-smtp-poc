@@ -42,6 +42,12 @@
             <artifactId>jakarta.mail</artifactId>
             <version>2.0.1</version>
         </dependency>
+         <!-- Jakarta Activation -->
+        <dependency>
+    <groupId>com.sun.activation</groupId>
+    <artifactId>jakarta.activation</artifactId>
+    <version>2.0.1</version>
+    </dependency>
 
         <!-- Test dependencies -->
         <dependency>
