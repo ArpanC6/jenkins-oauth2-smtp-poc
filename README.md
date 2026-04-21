@@ -82,6 +82,7 @@ I have been actively contributing to [jenkinsci/email-ext-plugin](https://github
 | [#1562](https://github.com/jenkinsci/email-ext-plugin/pull/1562) | Restore interrupt flag in `addContent()` save email output path |
 | [#1565](https://github.com/jenkinsci/email-ext-plugin/pull/1565) | Exception handling improvement in `RecipientProviderUtilities` |
 | [#1566](https://github.com/jenkinsci/email-ext-plugin/pull/1566) | Add unit tests for `EmailExtTemplateActionFactory` |
+| [#1571](https://github.com/jenkinsci/email-ext-plugin/pull/1571) | Replace broad Exception catch with specific exceptions in `renderTemplate` |
 
 ### Community Code Reviews
 
