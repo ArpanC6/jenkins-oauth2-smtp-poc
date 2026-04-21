@@ -69,7 +69,7 @@ I have been actively contributing to [jenkinsci/email-ext-plugin](https://github
 | [#1541](https://github.com/jenkinsci/email-ext-plugin/pull/1541) | Add unit tests for `AbortedTrigger` covering triggered and skipped behavior |
 | [#1550](https://github.com/jenkinsci/email-ext-plugin/pull/1550) | Extract SMTP property keys as named constants in `ExtendedEmailPublisherDescriptor` |
 
-### Open PRs — 9 Open (all CI checks passing)
+### Open PRs — 10 Open (all CI checks passing)
 
 | PR | Description |
 |---|---|
