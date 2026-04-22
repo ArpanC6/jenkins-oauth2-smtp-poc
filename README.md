@@ -11,7 +11,7 @@
 [![Java](https://img.shields.io/badge/Java-11-ED8B00?style=for-the-badge&logo=java&logoColor=white)](https://www.java.com)
 [![Maven](https://img.shields.io/badge/Maven-Build-C71A36?style=for-the-badge&logo=apache-maven&logoColor=white)](https://maven.apache.org)
 [![Tests](https://img.shields.io/badge/Tests-14%20Passing-brightgreen?style=for-the-badge&logo=github&logoColor=white)](https://github.com/ArpanC6/jenkins-oauth2-smtp-poc)
-[![PRs Merged](https://img.shields.io/badge/Merged%20PRs-7-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/jenkinsci/email-ext-plugin/pulls?q=is%3Apr+author%3AArpanC6+is%3Amerged)
+[![PRs Merged](https://img.shields.io/badge/Merged%20PRs-9-blue?style=for-the-badge&logo=github&logoColor=white)](https://github.com/jenkinsci/email-ext-plugin/pulls?q=is%3Apr+author%3AArpanC6+is%3Amerged)
 
 **Project:** Jenkins Email Notifications Using Outlook SMTP with OAuth 2.0  
 **Plugin:** [email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin)  
@@ -53,11 +53,11 @@ DEBUG SMTP: AUTH XOAUTH2 failed
 
 ---
 
-## Contribution Progress (as of April 15, 2026)
+## Contribution Progress (as of April 22, 2026)
 
 I have been actively contributing to [jenkinsci/email-ext-plugin](https://github.com/jenkinsci/email-ext-plugin) throughout the GSoC application period to understand the codebase deeply and demonstrate readiness for the project.
 
-### Merged PRs — 7 Merged
+### Merged PRs — 9 Merged
 
 | PR | Description |
 |---|---|
@@ -68,8 +68,10 @@ I have been actively contributing to [jenkinsci/email-ext-plugin](https://github
 | [#1507](https://github.com/jenkinsci/email-ext-plugin/pull/1507) | Remove unused deprecated `Util` class |
 | [#1541](https://github.com/jenkinsci/email-ext-plugin/pull/1541) | Add unit tests for `AbortedTrigger` covering triggered and skipped behavior |
 | [#1550](https://github.com/jenkinsci/email-ext-plugin/pull/1550) | Extract SMTP property keys as named constants in `ExtendedEmailPublisherDescriptor` |
+| [#1559](https://github.com/jenkinsci/email-ext-plugin/pull/1559) | Add unit tests for `EmailThrottler` |
+| [#1566](https://github.com/jenkinsci/email-ext-plugin/pull/1566) | Add unit tests for `EmailExtTemplateActionFactory` |
 
-### Open PRs — 10 Open (all CI checks passing)
+### Open PRs — 9 Open (all CI checks passing)
 
 | PR | Description |
 |---|---|
@@ -77,11 +79,10 @@ I have been actively contributing to [jenkinsci/email-ext-plugin](https://github
 | [#1523](https://github.com/jenkinsci/email-ext-plugin/pull/1523) | Add unit tests for XSS escaping in `EmailExtTemplateAction.renderError()` |
 | [#1553](https://github.com/jenkinsci/email-ext-plugin/pull/1553) | Restore thread interrupt flag in `renderTemplate()` and split broad exception handling |
 | [#1555](https://github.com/jenkinsci/email-ext-plugin/pull/1555) | Resolve JENKINS-26838 — replace `IsChildFileCallable` with `FilePath.isDescendant()` |
-| [#1559](https://github.com/jenkinsci/email-ext-plugin/pull/1559) | Add unit tests for `EmailThrottler` |
 | [#1561](https://github.com/jenkinsci/email-ext-plugin/pull/1561) | Restore interrupt flag in `ContentBuilder.transformText()` and add test coverage |
 | [#1562](https://github.com/jenkinsci/email-ext-plugin/pull/1562) | Restore interrupt flag in `addContent()` save email output path |
 | [#1565](https://github.com/jenkinsci/email-ext-plugin/pull/1565) | Exception handling improvement in `RecipientProviderUtilities` |
-| [#1566](https://github.com/jenkinsci/email-ext-plugin/pull/1566) | Add unit tests for `EmailExtTemplateActionFactory` |
+| [#1569](https://github.com/jenkinsci/email-ext-plugin/pull/1569) | Add unit tests for `EmailExtensionPlugin` static initializer |
 | [#1571](https://github.com/jenkinsci/email-ext-plugin/pull/1571) | Replace broad Exception catch with specific exceptions in `renderTemplate` |
 
 ### Community Code Reviews
